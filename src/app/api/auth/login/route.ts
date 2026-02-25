@@ -68,7 +68,8 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    console.error("[auth/login]", error);
     return NextResponse.json({ error: "Unable to login right now." }, { status: 500 });
   }
 }

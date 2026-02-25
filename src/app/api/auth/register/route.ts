@@ -69,7 +69,8 @@ export async function POST(request: Request) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    console.error("[auth/register]", error);
     return NextResponse.json({ error: "Unable to register right now." }, { status: 500 });
   }
 }
