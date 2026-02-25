@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-const heroImages = ["/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", "/hero5.jpg"];
+const defaultHeroImages = ["/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", "/hero5.jpg"];
 
 const categories = [
   {
@@ -136,8 +137,11 @@ const partners = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [heroImages, setHeroImages] = useState<string[]>(defaultHeroImages);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -148,11 +152,86 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const loadHeroSliderImages = async () => {
+      try {
+        const response = await fetch("/api/hero-slider", { cache: "no-store" });
+        const data = (await response.json()) as { images?: string[] };
+
+        if (!response.ok) {
+          return;
+        }
+
+        if (data.images && data.images.length > 0) {
+          setHeroImages(data.images);
+        }
+      } catch {
+        return;
+      }
+    };
+
+    void loadHeroSliderImages();
+  }, []);
+
+  useEffect(() => {
+    if (heroImages.length === 0) {
+      return;
+    }
+
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
     }, 5000);
+
     return () => clearInterval(timer);
+  }, [heroImages.length]);
+
+  const activeSlideIndex = heroImages.length === 0 ? 0 : currentSlide % heroImages.length;
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = (await response.json()) as { authenticated?: boolean };
+        setIsAuthenticated(Boolean(data.authenticated));
+      } catch {
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkSession();
   }, []);
+
+  const requireAuthNavigation = (pathWhenAuthenticated: string) => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    router.push(pathWhenAuthenticated);
+  };
+
+  const handleProtectedListAction = async (product: {
+    name: string;
+    price?: string;
+    image?: string;
+    category?: string;
+  }) => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      await fetch("/api/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(product),
+      });
+    } catch {
+      return;
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-background-light text-primary">
@@ -177,11 +256,11 @@ export default function Home() {
           </div>
 
           <div className={`flex items-center gap-10 transition-colors duration-500 ${isScrolled ? "text-primary" : "text-white"}`}>
-            <button className="flex items-center gap-2 hover:opacity-60 transition-opacity">
+            <button className="flex items-center gap-2 hover:opacity-60 transition-opacity" onClick={() => requireAuthNavigation("/account")}>
               <span className="text-[10px] tracking-widest font-semibold uppercase hidden lg:block">Account</span>
               <span className="material-symbols-outlined text-xl font-light">person</span>
             </button>
-            <button className="relative flex items-center gap-2 hover:opacity-60 transition-opacity">
+            <button className="relative flex items-center gap-2 hover:opacity-60 transition-opacity" onClick={() => requireAuthNavigation("/my-list")}>
               <span className="text-[10px] tracking-widest font-semibold uppercase hidden lg:block">My List</span>
               <span className="material-symbols-outlined text-xl font-light">bookmark</span>
               <span className={`absolute -top-2 -right-3 text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-sm ${isScrolled ? "bg-primary text-white" : "bg-white text-primary"}`}>
@@ -199,7 +278,7 @@ export default function Home() {
             <img
               key={idx}
               alt={`Premium Organic Produce ${idx + 1}`}
-              className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-1000 ${idx === currentSlide ? "opacity-100" : "opacity-0"}`}
+              className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-1000 ${idx === activeSlideIndex ? "opacity-100" : "opacity-0"}`}
               src={img}
             />
           ))}
@@ -233,7 +312,7 @@ export default function Home() {
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`hero-dot ${idx === currentSlide ? "active" : ""}`}
+              className={`hero-dot ${idx === activeSlideIndex ? "active" : ""}`}
               aria-label={`Go to slide ${idx + 1}`}
             />
           ))}
@@ -316,7 +395,14 @@ export default function Home() {
                   <h3 className="text-xl font-serif italic text-primary">{product.name}</h3>
                   <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                     <span className="text-lg font-light text-primary">{product.price}</span>
-                    <button className="btn-elegant text-primary">Add to List</button>
+                    <button
+                      className="btn-elegant text-primary"
+                      onClick={() => {
+                        void handleProtectedListAction(product);
+                      }}
+                    >
+                      Add to List
+                    </button>
                   </div>
                 </div>
               </div>
@@ -409,7 +495,14 @@ export default function Home() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-xl font-light text-primary">{product.price}</span>
-                  <button className="btn-elegant text-primary">Add to List</button>
+                  <button
+                    className="btn-elegant text-primary"
+                    onClick={() => {
+                      void handleProtectedListAction(product);
+                    }}
+                  >
+                    Add to List
+                  </button>
                 </div>
               </div>
             ))}
@@ -492,7 +585,14 @@ export default function Home() {
                 </div>
                 <h4 className="font-serif italic text-lg mb-2 text-primary">{product.name}</h4>
                 <p className="text-primary font-medium mb-6">{product.price}</p>
-                <button className="btn-elegant text-primary">Add to List</button>
+                <button
+                  className="btn-elegant text-primary"
+                  onClick={() => {
+                    void handleProtectedListAction(product);
+                  }}
+                >
+                  Add to List
+                </button>
               </div>
             ))}
           </div>
