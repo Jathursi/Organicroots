@@ -23,6 +23,7 @@ type UploadCardProps = {
   helper: string;
   uploadedFiles: string[];
   previewAsImage?: boolean;
+  previewAsVideo?: boolean;
   icon: string;
   fileHint: string;
   buttonLabel: string;
@@ -37,6 +38,7 @@ function UploadCard({
   helper,
   uploadedFiles,
   previewAsImage = false,
+  previewAsVideo = false,
   icon,
   fileHint,
   buttonLabel,
@@ -76,7 +78,17 @@ function UploadCard({
       </label>
 
       {uploadedFiles.length > 0 && (
-        previewAsImage ? (
+        previewAsVideo ? (
+          <div className="mt-6 grid grid-cols-1 gap-4">
+            {uploadedFiles.map((file) => (
+              <div className="rounded-lg overflow-hidden border border-slate-200 bg-slate-50" key={file}>
+                <video className="w-full h-[280px] object-cover" controls preload="metadata">
+                  <source src={file} />
+                </video>
+              </div>
+            ))}
+          </div>
+        ) : previewAsImage ? (
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {uploadedFiles.map((file) => (
               <div className="aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-50" key={file}>
@@ -100,8 +112,10 @@ export default function AdminPage() {
   const router = useRouter();
   const [activeMenu, setActiveMenu] = useState<MenuItem>("user contents");
   const [sliderImages, setSliderImages] = useState<string[]>([]);
-  const [seedVideos, setSeedVideos] = useState<string[]>([]);
-  const [featureImages, setFeatureImages] = useState<string[]>([]);
+  const [seedVideo, setSeedVideo] = useState<string[]>([]);
+  const [freeDeliveryImage, setFreeDeliveryImage] = useState<string[]>([]);
+  const [dailyGrocerImage, setDailyGrocerImage] = useState<string[]>([]);
+  const [handmadeProductsImage, setHandmadeProductsImage] = useState<string[]>([]);
   const [uploadMessage, setUploadMessage] = useState<string>("");
 
   const pageTitle = useMemo(() => {
@@ -158,7 +172,32 @@ export default function AdminPage() {
     };
 
     void loadSliderImages();
-  }, []);
+
+    const loadSingleAsset = async (
+      key: "seedToPlateVideo" | "freeDeliveryImage" | "dailyGrocerImage" | "handmadeProductsImage",
+      setter: (value: string[]) => void
+    ) => {
+      try {
+        const response = await fetch(`/api/admin/user-content/${key}`, { cache: "no-store" });
+        const data = (await response.json()) as { asset?: { url: string } | null };
+
+        if (!response.ok) {
+          return;
+        }
+
+        if (data.asset?.url) {
+          setter([data.asset.url]);
+        }
+      } catch {
+        return;
+      }
+    };
+
+    void loadSingleAsset("seedToPlateVideo", setSeedVideo);
+    void loadSingleAsset("freeDeliveryImage", setFreeDeliveryImage);
+    void loadSingleAsset("dailyGrocerImage", setDailyGrocerImage);
+    void loadSingleAsset("handmadeProductsImage", setHandmadeProductsImage);
+  }, [router]);
 
   const uploadSliderImages = async (files: FileList | null) => {
     if (!files || files.length === 0) {
@@ -192,6 +231,40 @@ export default function AdminPage() {
 
       setSliderImages((prev) => [...(data.images ?? []), ...prev]);
       setUploadMessage(data.message ?? "Images uploaded.");
+    } catch {
+      setUploadMessage("Upload failed.");
+    }
+  };
+
+  const uploadSingleAsset = async (
+    key: "seedToPlateVideo" | "freeDeliveryImage" | "dailyGrocerImage" | "handmadeProductsImage",
+    files: FileList | null,
+    setter: (value: string[]) => void
+  ) => {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    setUploadMessage("");
+
+    const formData = new FormData();
+    formData.append("file", files[0]);
+
+    try {
+      const response = await fetch(`/api/admin/user-content/${key}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = (await response.json()) as { asset?: { url: string }; error?: string; message?: string };
+
+      if (!response.ok) {
+        setUploadMessage(data.error ?? "Upload failed.");
+        return;
+      }
+
+      setter(data.asset?.url ? [data.asset.url] : []);
+      setUploadMessage(data.message ?? "Upload successful.");
     } catch {
       setUploadMessage("Upload failed.");
     }
@@ -288,34 +361,54 @@ export default function AdminPage() {
                 fileHint="Maximum file size: 50MB"
                 helper="Upload educational and promotional videos showcasing the product journey."
                 icon="movie_filter"
-                multiple
+                previewAsVideo
                 onFilesSelected={(files) => {
-                  if (!files) {
-                    return;
-                  }
-
-                  setSeedVideos(Array.from(files).map((file) => file.name));
+                  void uploadSingleAsset("seedToPlateVideo", files, setSeedVideo);
                 }}
                 title="Upload Videos (From Seed to Plate)"
-                uploadedFiles={seedVideos}
+                uploadedFiles={seedVideo}
               />
 
               <UploadCard
                 accept="image/*"
                 buttonLabel="Choose File"
                 fileHint="PNG, JPG or WEBP (Max 2MB)"
-                helper="Upload images for Free Delivery, Daily Grocer, and Handmade Products."
+                helper="Upload image for Free Delivery section."
                 icon="collections"
-                multiple
+                previewAsImage
                 onFilesSelected={(files) => {
-                  if (!files) {
-                    return;
-                  }
-
-                  setFeatureImages(Array.from(files).map((file) => file.name));
+                  void uploadSingleAsset("freeDeliveryImage", files, setFreeDeliveryImage);
                 }}
-                title="Upload Feature Images"
-                uploadedFiles={featureImages}
+                title="Upload Free Delivery Image"
+                uploadedFiles={freeDeliveryImage}
+              />
+
+              <UploadCard
+                accept="image/*"
+                buttonLabel="Choose File"
+                fileHint="PNG, JPG or WEBP (Max 2MB)"
+                helper="Upload image for Daily Grocer card."
+                icon="collections"
+                previewAsImage
+                onFilesSelected={(files) => {
+                  void uploadSingleAsset("dailyGrocerImage", files, setDailyGrocerImage);
+                }}
+                title="Upload Daily Grocer Image"
+                uploadedFiles={dailyGrocerImage}
+              />
+
+              <UploadCard
+                accept="image/*"
+                buttonLabel="Choose File"
+                fileHint="PNG, JPG or WEBP (Max 2MB)"
+                helper="Upload image for Handmade Products section."
+                icon="collections"
+                previewAsImage
+                onFilesSelected={(files) => {
+                  void uploadSingleAsset("handmadeProductsImage", files, setHandmadeProductsImage);
+                }}
+                title="Upload Handmade Products Image"
+                uploadedFiles={handmadeProductsImage}
               />
             </div>
           ) : (

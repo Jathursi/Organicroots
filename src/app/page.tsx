@@ -141,7 +141,8 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [heroImages, setHeroImages] = useState<string[]>(defaultHeroImages);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sessionRole, setSessionRole] = useState<string | null>(null);
+  const [siteAssets, setSiteAssets] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const handleScroll = () => {
@@ -173,6 +174,32 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const loadSiteAssets = async () => {
+      try {
+        const response = await fetch("/api/site-assets", { cache: "no-store" });
+        const data = (await response.json()) as {
+          assets?: Record<string, { url: string; type: string }>;
+        };
+
+        if (!response.ok || !data.assets) {
+          return;
+        }
+
+        const mapped = Object.entries(data.assets).reduce<Record<string, string>>((acc, [key, value]) => {
+          acc[key] = value.url;
+          return acc;
+        }, {});
+
+        setSiteAssets(mapped);
+      } catch {
+        return;
+      }
+    };
+
+    void loadSiteAssets();
+  }, []);
+
+  useEffect(() => {
     if (heroImages.length === 0) {
       return;
     }
@@ -185,23 +212,45 @@ export default function Home() {
   }, [heroImages.length]);
 
   const activeSlideIndex = heroImages.length === 0 ? 0 : currentSlide % heroImages.length;
+  const freeDeliveryImageSrc =
+    siteAssets.freeDeliveryImage ??
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuBPLZbCgEyf_wK7rdYgoFFTaet0XZXwmwJoAGs_sUiwhtRls4_5ym4sfb2-9vj8hH6Ab7Phjf73tcXwOPR5K3gZSSwOpRxYyiUKyrpRzMxJYrATKanuKO4SH-QGblo7EqLrgG7OOdE3v-sCgC_QLuc8DwpQ8BnHOI4dnETUvmwzJkv_97szSupuom19Kwb5bw1Jn7Qtv9QBQhh5NFuOM1a9C-Z9vpFUI794k8e38QM3MFFyztLAw62DDF7ZQGbwuGw1jVfRfcFRB-_l";
+  const seedToPlateVideoSrc = siteAssets.seedToPlateVideo ?? "/veg.mp4";
+  const handmadeProductsImageSrc =
+    siteAssets.handmadeProductsImage ??
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw";
+  const dailyGrocerImageSrc =
+    siteAssets.dailyGrocerImage ??
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw";
 
   useEffect(() => {
     const checkSession = async () => {
       try {
         const response = await fetch("/api/auth/me", { cache: "no-store" });
-        const data = (await response.json()) as { authenticated?: boolean };
-        setIsAuthenticated(Boolean(data.authenticated));
+        const data = (await response.json()) as {
+          authenticated?: boolean;
+          user?: { role?: string };
+        };
+
+        if (!data.authenticated) {
+          setSessionRole(null);
+          return;
+        }
+
+        setSessionRole(data.user?.role ?? null);
       } catch {
-        setIsAuthenticated(false);
+        setSessionRole(null);
       }
     };
 
     checkSession();
   }, []);
 
+  const isUserLoggedIn = sessionRole === "user";
+  const isAdminLoggedIn = sessionRole === "admin";
+
   const requireAuthNavigation = (pathWhenAuthenticated: string) => {
-    if (!isAuthenticated) {
+    if (!isUserLoggedIn) {
       router.push("/login");
       return;
     }
@@ -215,7 +264,7 @@ export default function Home() {
     image?: string;
     category?: string;
   }) => {
-    if (!isAuthenticated) {
+    if (!isUserLoggedIn) {
       router.push("/login");
       return;
     }
@@ -231,6 +280,12 @@ export default function Home() {
     } catch {
       return;
     }
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setSessionRole(null);
+    router.push("/login");
   };
 
   return (
@@ -256,6 +311,29 @@ export default function Home() {
           </div>
 
           <div className={`flex items-center gap-10 transition-colors duration-500 ${isScrolled ? "text-primary" : "text-white"}`}>
+            {isUserLoggedIn ? (
+              <button className="text-[10px] tracking-widest font-semibold uppercase hover:opacity-60 transition-opacity" onClick={() => {
+                void handleLogout();
+              }}>
+                Logout
+              </button>
+            ) : isAdminLoggedIn ? (
+              <>
+                <button className="text-[10px] tracking-widest font-semibold uppercase hover:opacity-60 transition-opacity" onClick={() => router.push("/admin")}>
+                  Admin Panel
+                </button>
+                <button className="text-[10px] tracking-widest font-semibold uppercase hover:opacity-60 transition-opacity" onClick={() => {
+                  void handleLogout();
+                }}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button className="text-[10px] tracking-widest font-semibold uppercase hover:opacity-60 transition-opacity" onClick={() => router.push("/login")}>
+                Login
+              </button>
+            )}
+
             <button className="flex items-center gap-2 hover:opacity-60 transition-opacity" onClick={() => requireAuthNavigation("/account")}>
               <span className="text-[10px] tracking-widest font-semibold uppercase hidden lg:block">Account</span>
               <span className="material-symbols-outlined text-xl font-light">person</span>
@@ -416,7 +494,7 @@ export default function Home() {
         <img
           alt="Delivery Background"
           className="absolute inset-0 w-full h-full object-cover opacity-20"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPLZbCgEyf_wK7rdYgoFFTaet0XZXwmwJoAGs_sUiwhtRls4_5ym4sfb2-9vj8hH6Ab7Phjf73tcXwOPR5K3gZSSwOpRxYyiUKyrpRzMxJYrATKanuKO4SH-QGblo7EqLrgG7OOdE3v-sCgC_QLuc8DwpQ8BnHOI4dnETUvmwzJkv_97szSupuom19Kwb5bw1Jn7Qtv9QBQhh5NFuOM1a9C-Z9vpFUI794k8e38QM3MFFyztLAw62DDF7ZQGbwuGw1jVfRfcFRB-_l"
+          src={freeDeliveryImageSrc}
         />
         <div className="absolute inset-0 promo-overlay"></div>
         <div className="content-container relative h-full flex items-center">
@@ -552,7 +630,7 @@ export default function Home() {
       {/* Video Section */}
       <section className="relative h-[600px] overflow-hidden">
         <video autoPlay className="absolute inset-0 w-full h-full object-cover" loop muted playsInline>
-          <source src="/veg.mp4" type="video/mp4" />
+          <source src={seedToPlateVideoSrc} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
           <div className="content-container text-center text-white">
@@ -626,7 +704,7 @@ export default function Home() {
                 <img
                   alt="Fresh Vegetable Splash"
                   className="w-full h-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw"
+                  src={handmadeProductsImageSrc}
                 />
               </div>
             </div>
@@ -677,7 +755,7 @@ export default function Home() {
                 <img
                   alt="Daily Grocer Card"
                   className="w-full mb-6 mix-blend-multiply"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw"
+                  src={dailyGrocerImageSrc}
                 />
                 <p className="text-[10px] opacity-60 uppercase text-center italic tracking-widest">Minimalist Lifestyle</p>
               </div>

@@ -65,3 +65,14 @@ model HeroSliderImage {
 
   @@map("hero_slider_images")
 }
+
+model SiteAsset {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  url       String
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_assets")
+}

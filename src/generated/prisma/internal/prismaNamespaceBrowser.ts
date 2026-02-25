@@ -22,7 +22,8 @@ export const ModelName = {
   User: 'User',
   Profile: 'Profile',
   UserListItem: 'UserListItem',
-  HeroSliderImage: 'HeroSliderImage'
+  HeroSliderImage: 'HeroSliderImage',
+  SiteAsset: 'SiteAsset'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -85,6 +86,18 @@ export const HeroSliderImageScalarFieldEnum = {
 } as const
 
 export type HeroSliderImageScalarFieldEnum = (typeof HeroSliderImageScalarFieldEnum)[keyof typeof HeroSliderImageScalarFieldEnum]
+
+
+export const SiteAssetScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  url: 'url',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SiteAssetScalarFieldEnum = (typeof SiteAssetScalarFieldEnum)[keyof typeof SiteAssetScalarFieldEnum]
 
 
 export const SortOrder = {

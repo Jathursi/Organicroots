@@ -392,7 +392,8 @@ export const ModelName = {
   User: 'User',
   Profile: 'Profile',
   UserListItem: 'UserListItem',
-  HeroSliderImage: 'HeroSliderImage'
+  HeroSliderImage: 'HeroSliderImage',
+  SiteAsset: 'SiteAsset'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -408,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "profile" | "userListItem" | "heroSliderImage"
+    modelProps: "user" | "profile" | "userListItem" | "heroSliderImage" | "siteAsset"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -708,6 +709,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SiteAsset: {
+      payload: Prisma.$SiteAssetPayload<ExtArgs>
+      fields: Prisma.SiteAssetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SiteAssetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SiteAssetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>
+        }
+        findFirst: {
+          args: Prisma.SiteAssetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SiteAssetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>
+        }
+        findMany: {
+          args: Prisma.SiteAssetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>[]
+        }
+        create: {
+          args: Prisma.SiteAssetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>
+        }
+        createMany: {
+          args: Prisma.SiteAssetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SiteAssetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>[]
+        }
+        delete: {
+          args: Prisma.SiteAssetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>
+        }
+        update: {
+          args: Prisma.SiteAssetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>
+        }
+        deleteMany: {
+          args: Prisma.SiteAssetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SiteAssetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SiteAssetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>[]
+        }
+        upsert: {
+          args: Prisma.SiteAssetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SiteAssetPayload>
+        }
+        aggregate: {
+          args: Prisma.SiteAssetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSiteAsset>
+        }
+        groupBy: {
+          args: Prisma.SiteAssetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SiteAssetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SiteAssetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SiteAssetCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -792,6 +867,18 @@ export const HeroSliderImageScalarFieldEnum = {
 } as const
 
 export type HeroSliderImageScalarFieldEnum = (typeof HeroSliderImageScalarFieldEnum)[keyof typeof HeroSliderImageScalarFieldEnum]
+
+
+export const SiteAssetScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  url: 'url',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SiteAssetScalarFieldEnum = (typeof SiteAssetScalarFieldEnum)[keyof typeof SiteAssetScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -956,6 +1043,7 @@ export type GlobalOmitConfig = {
   profile?: Prisma.ProfileOmit
   userListItem?: Prisma.UserListItemOmit
   heroSliderImage?: Prisma.HeroSliderImageOmit
+  siteAsset?: Prisma.SiteAssetOmit
 }
 
 /* Types for Logging */

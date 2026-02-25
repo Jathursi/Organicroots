@@ -63,3 +63,8 @@ export type UserListItem = Prisma.UserListItemModel
  * 
  */
 export type HeroSliderImage = Prisma.HeroSliderImageModel
+/**
+ * Model SiteAsset
+ * 
+ */
+export type SiteAsset = Prisma.SiteAssetModel
