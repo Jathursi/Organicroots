@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { AUTH_COOKIE_NAME, createAuthToken } from "@/lib/auth";
+import { mapAuthServerError } from "@/lib/auth-error";
 
 type RegisterBody = {
   email?: string;
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error("[auth/register]", error);
-    return NextResponse.json({ error: "Unable to register right now." }, { status: 500 });
+    const mapped = mapAuthServerError(error);
+    return NextResponse.json({ error: mapped.message }, { status: mapped.status });
   }
 }
