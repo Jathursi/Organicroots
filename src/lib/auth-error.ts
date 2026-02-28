@@ -30,5 +30,8 @@ export function mapAuthServerError(error: unknown): { status: number; message: s
   }
 
   console.error("[CRITICAL: Unmapped Error]", error);
-  return { status: 500, message: "Internal server error. Please check server logs." };
+  return {
+    status: 500,
+    message: `Internal server error: ${errorMessage.substring(0, 100)}${errorMessage.length > 100 ? "..." : ""}`
+  };
 }
