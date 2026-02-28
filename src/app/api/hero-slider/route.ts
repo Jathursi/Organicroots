@@ -10,7 +10,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ images: images.map((item) => item.imageUrl) }, { status: 200 });
+    return NextResponse.json({ images: images.map((item: { imageUrl: string }) => item.imageUrl) }, { status: 200 });
   } catch (error) {
     console.error("[api/hero-slider]", error);
     return NextResponse.json({ images: [] }, { status: 200 });

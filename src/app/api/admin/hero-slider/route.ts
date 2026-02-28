@@ -19,7 +19,7 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json({ images: images.map((item) => item.imageUrl) }, { status: 200 });
+  return NextResponse.json({ images: images.map((item: { imageUrl: string }) => item.imageUrl) }, { status: 200 });
 }
 
 export async function POST(request: Request) {

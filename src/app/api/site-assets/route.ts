@@ -11,14 +11,14 @@ export async function GET() {
       },
     });
 
-    const mapped = assets.reduce<Record<string, { url: string; type: string }>>((acc, asset) => {
+    const mapped = assets.reduce((acc: Record<string, { url: string; type: string }>, asset: typeof assets[number]) => {
       acc[asset.key] = {
         url: asset.url,
         type: asset.type,
       };
 
       return acc;
-    }, {});
+    }, {} as Record<string, { url: string; type: string }>);
 
     return NextResponse.json({ assets: mapped }, { status: 200 });
   } catch (error) {

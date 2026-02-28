@@ -11,6 +11,18 @@ export function mapAuthServerError(error: unknown): { status: number; message: s
   }
 
   if (
+    errorCode === "P6001" ||
+    errorMessage.includes("prisma://") ||
+    errorMessage.includes("prisma+postgres://") ||
+    errorMessage.includes("Error validating datasource")
+  ) {
+    return {
+      status: 500,
+      message: "Invalid datasource URL for current Prisma mode. In Vercel, set DIRECT_URL/DATABASE_URL to valid PostgreSQL URLs.",
+    };
+  }
+
+  if (
     errorCode === "P2021" ||
     errorCode === "P2022" ||
     errorMessage.includes("does not exist") ||
