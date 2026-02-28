@@ -77,3 +77,16 @@ model SiteAsset {
 
   @@map("site_assets")
 }
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  imageUrl    String?
+  accentColor String?  @default("#caf0f8")
+  priority    Int      @default(0)
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}

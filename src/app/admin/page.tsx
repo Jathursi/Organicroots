@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import CategoryManagement from "@/components/admin/CategoryManagement";
 
 const menuItems = [
   "dashboard",
@@ -274,19 +275,19 @@ export default function AdminPage() {
     <main className="bg-background-light text-slate-800 min-h-screen flex">
       <aside className="w-72 bg-white border-r border-slate-200 flex flex-col fixed h-full z-20">
         <div className="p-8">
-          <h1 className="font-serif text-4xl font-bold tracking-tight text-primary">ORGANICROOTS</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-primary uppercase">ORGANIC<span className="font-light italic">ROOTS</span></h1>
+          <span className="text-[9px] tracking-[0.3em] uppercase text-primary/40 font-bold block mt-1">Admin Console</span>
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
           {menuItems.map((item) => (
             <button
-              className={`w-full flex items-center px-4 py-3 text-sm rounded-lg transition-colors ${
-                activeMenu === item
-                  ? "bg-primary text-white font-semibold shadow-lg shadow-primary/20"
-                  : item === "logout"
-                    ? "text-red-500 hover:bg-red-50"
-                    : "text-slate-600 hover:bg-light-cyan/50"
-              }`}
+              className={`w-full flex items-center px-4 py-3 text-sm rounded-lg transition-colors ${activeMenu === item
+                ? "bg-primary text-white font-semibold shadow-lg shadow-primary/20"
+                : item === "logout"
+                  ? "text-red-500 hover:bg-red-50"
+                  : "text-slate-600 hover:bg-light-cyan/50"
+                }`}
               key={item}
               onClick={() => {
                 void handleMenuClick(item);
@@ -411,6 +412,8 @@ export default function AdminPage() {
                 uploadedFiles={handmadeProductsImage}
               />
             </div>
+          ) : activeMenu === "category" ? (
+            <CategoryManagement />
           ) : (
             <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
               <p className="text-slate-500">This section is ready for next setup.</p>
