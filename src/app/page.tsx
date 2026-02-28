@@ -3,131 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const defaultHeroImages = ["/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", "/hero5.jpg"];
-
-const categories = [
-  {
-    name: "Heritage Meats",
-    count: "12 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAXjbKVPH5yGG2zJZ8LA6Z9L3QRCa6PNgVEDCd74A28YyOsxr4Fu87qjDMEgVBPx-aCjy4Qwn3scZ_xQ_ZEokKg1J5CB8Hxh8ADjgtq5lBvZ63VwhlsIWsLvnI34ClSVmHvCsVp99Ftzevd7LErbOlUNoEcckOFJsOkbIIuA0OYIun-KeRRZPNUMxiNy1DLLK6BMvyFccm08GAy0_PISUoedTOrHC2yktojOdFc2gtBrFyqHkByocqgUNHd4gY0ciVS5KTEEzBiuMvp",
-  },
-  {
-    name: "Farm Vegetables",
-    count: "45 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw",
-  },
-  {
-    name: "Orchard Fruits",
-    count: "32 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAIeh_lUqhtQnlLaebqvj51AihYIAJJVvU7uGGh1siaZK4QXxj4lR2nI420SKjusVo41ADhNqyjBXj2khQ2o2pFXuc5FpeE3Gdt6-GKtMEzJGYW18HB5ZYjce3H8umDJ59eoellFaOvFY_Y8X0EJxHud-WHM33vzSpxpF0tMe7ldWQgkqBXnIvvlctmAA1oaBVrhtSX0laW8GxIxWpyKSXfYpFNvmGcYqxbjAWAAn3ZJDR2KYMFZ9AHyPZpI9WMnyNnfSk-sL6HEEzA",
-  },
-  {
-    name: "Artisan Snacks",
-    count: "28 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTJn7AfEegilBlkY5r4aDrUXBrumZ23Sod2_g6U8RK2GYcPMQmaucFeNBf5rbUTI05q-Y89nepWPFoUmig0_ni9-K6LYVHdJXOzTWB08ZNG_iQUQGkFYVNRts3MUigNSF2DMC4-2jwJ6xmOMtAAU7REJ2T283DIYK7j5EfloEo5mF0ngHrWrY-5SRFr5slD0jlA8kDAGe6HMywKCKP7SieztyPlViJuGkd3bg1BwlgCrFZf5nCTqc_8UQVbW0fhXmlicJzE2Xw_c1",
-  },
-  {
-    name: "Morning Bakery",
-    count: "18 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCTQd32-LWO00bS_Bi1kGrjbBuWqRTB4AG-7L6SPriHRueh8k_VFzlTYKX535jqJpezqJnvIbqn-UfrC5XapF7VGgkhweaxGxNXZZGMosAXciZiVtkserrsWmVF80UgjO-vg3s9igISDWDUfoi8nm2YSfFX94Io4GzfU5ctOEZ6Pcr7Vuvvo1VZTJvFy8-fhe3jz59LAD1Pu89kFT0kh5WarsNflYbbmglMuDY89P20-_cyk4EZzaKTeYzpvzBGZM8ttf_9TJDwIqft",
-  },
-  {
-    name: "Cold Pressed",
-    count: "10 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA-NiH9eoD9U2ceeH8JBJ9A7ctoVmJFQ2LJAmgN7Ek-KG_4wz3PsCmYdMT16PwjNclSl-ywQoC8D4abQDDkoP0Bdwnd7-SXOiOe-Uw1OoTn8kSVl_rb-1QhFPJsFO_nRHvMBI7ExWyXIVOHYfHzUyhj1IPAYWHq5QWyu8rsGu9rOTD3PvuhW87G-UqxzvkM_jxx1kdgB4LOh0PDceKQ2hGNUEWphTLVTga2AX3AzLwP_tXo_8od4svFIlJSza31qNh9cJ75Zmh-5OWC",
-  },
-  {
-    name: "Fine Desserts",
-    count: "15 Selections",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDkV_G8cw8qkKSPq6KkZZUFtQAzzUynD3u--71pCmj0CNSKq8jMxUq_8TstQ6JP0soH5xZuI59lfdRlGVIQnCCVhQdcnJaAm2lVA_dCehtyr-c8KR3-PQT97LxxIJbInAjycN8Y5-ikC00G-NQuXhUCMSdh4lX9WJnb1bmCt8ra9NwBMzq0Bp3uNMPnh6zfVs-l7p7pjoRXbbRL2sfRZ55Yey1-_ytO-5C2XzwcdAhHjvUUoFPOfTg2A2Vv-sn-iMmLj7opWjYhOWic",
-  },
-];
-
-const flashProducts = [
-  {
-    name: "Natural Pure Strawberries",
-    category: "Wild Harvest",
-    price: "$12.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAKNxy76PvIyTle7fLonNVjPDd53YiJdRLADq_ClTeie4QvyyZDqAbjz78GQ7jaW0FZxg-z1E71a4ChI6Ur09EgWB2vpfEcvoSUl4iFpgKjCn5yLiLTRe09vSojiHDHJBe4N3bjMrMJUcFFwhoJQdR1L7vIYu3hNlAJ0Gd5inhI6MwJ-G-xPykxFgjApfjF1BuNrd7HnZm2N1TJvBgZ5OEGtAudN21FZQov45mhch2VYvIpVtvHcNm53fJHWysVuQOUGMpqG-AyhoBs",
-  },
-  {
-    name: "Organic Red Pomegranate",
-    category: "Heritage Orchards",
-    price: "$18.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBBGKR0av6qIn270MehYbW6z5tcbswwCBefYuj8LoUzvpNmPaxrGx7As-inI-MsTyEvl8j-3OoAqDMNHBbtsJog5DIjLPN9EjFfUMmFTUGc3fGJmXD12D9hAyi7XK2h_jNDRitWmC4gXDxadlw4eDc-LPYgqNkYeDiezZa2aEvdyD6o1QyCGTEJLZU9oISh-Ohm2lZJ9ztS0CN6-VNEebAONp6qmghGhXd3PrBlZ_gtfNussSN2ijVrawhcCq1E5JScE4JUcQ3_1ARa",
-  },
-  {
-    name: "Natural Vine Tomato",
-    category: "Farm Fresh",
-    price: "$8.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBd2jvcKDP11VunjnsPGw7DEQBG3H5D7Xd95JBfnHX-ofXxNpZbynfHF5kGKGT684H5P_tiQ50j1NxoEfX-ysif-3GVv25YW4RXPFfM82bc2ku6L5dh08lxVa9H7b6Klk_tO3Sgav6DwdWmjj9QQ7h062BFx-ICv26T6NzdLwI_9QYxiNm6lU3g5Aycm-97AMqobIxjShSPl25Yx99xhema89ZnwB_K0F7gIk86MMH1xU9-5a44-FTZ1TTv_qD533w-xg6lOcFVQhfR",
-  },
-  {
-    name: "Gold Pineapple",
-    category: "Tropical Gold",
-    price: "$25.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCY3gborX3HE8BLGCw2taozjq6ov5XRecM0s3rRB8BvReb235mN__IrdwoOhpOILd4tKBbO-auI1czJu7kBE94j_YSP32R1d4Tk6il0G_RQFaMZFsj2K8ddDx1lEXGZ1dMkgrJUfjyNZDl9db2LFmuJMgCB3uyzwZ0OdCci8El---wkeoNrSuHcCVBUdnvE6y49UeT2BWEXhzwvGRDpUypRnCPXjAD890O4HDWWbTG7mknaKtNSngGSmpm3ytoYljzqyVB147XdhCX9",
-  },
-];
-
-const featuredProducts = [
-  {
-    name: "Organic Red Sweet Pepper",
-    category: "Organic Estate",
-    weight: "1000gm",
-    price: "$24.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw",
-  },
-  {
-    name: "Premium Lemon Green Tea",
-    category: "Artisan Tea",
-    weight: "1000gm",
-    price: "$24.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA-NiH9eoD9U2ceeH8JBJ9A7ctoVmJFQ2LJAmgN7Ek-KG_4wz3PsCmYdMT16PwjNclSl-ywQoC8D4abQDDkoP0Bdwnd7-SXOiOe-Uw1OoTn8kSVl_rb-1QhFPJsFO_nRHvMBI7ExWyXIVOHYfHzUyhj1IPAYWHq5QWyu8rsGu9rOTD3PvuhW87G-UqxzvkM_jxx1kdgB4LOh0PDceKQ2hGNUEWphTLVTga2AX3AzLwP_tXo_8od4svFIlJSza31qNh9cJ75Zmh-5OWC",
-  },
-  {
-    name: "Imported South Africa Lemons",
-    category: "Heritage Groves",
-    weight: "1000gm",
-    price: "$24.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAIeh_lUqhtQnlLaebqvj51AihYIAJJVvU7uGGh1siaZK4QXxj4lR2nI420SKjusVo41ADhNqyjBXj2khQ2o2pFXuc5FpeE3Gdt6-GKtMEzJGYW18HB5ZYjce3H8umDJ59eoellFaOvFY_Y8X0EJxHud-WHM33vzSpxpF0tMe7ldWQgkqBXnIvvlctmAA1oaBVrhtSX0laW8GxIxWpyKSXfYpFNvmGcYqxbjAWAAn3ZJDR2KYMFZ9AHyPZpI9WMnyNnfSk-sL6HEEzA",
-  },
-  {
-    name: "Organic Hass Avocado",
-    category: "Italian Harvest",
-    weight: "1000gm",
-    price: "$24.00",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCkamhTltGTMMFHxDY9mW6nAKiYE0AXzvNhmSmepISnQ_e87rtr8YgHTmejzxjSCvbsWuRtnpk2yaNWr0BIH2mAuecMBMu5JKVqEIEubgy61iojBkMqRs-Rq_q5oZkTvjBH6UvjZaimj2pBj983iQt7XhFNbFvwx1Q1o5Zjvby6mzlVp56LhuRd69qEgWgOwJZIVIvtLgVNezAAkDotwmS17PEeu9n80RiDmMeqbNCFCYZlzqkcoJxETlH282jLr0a0BQubA2jsK6Ss",
-  },
-];
-
-const weeklyProducts = [
-  { name: "Organic Grapes", price: "$30.00", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDWcP0w7qt1gICLs1qPeeqkJP6p8b0qzlIsJbdPeSJ3VWB5siw2zMdYPgOWGVkjVzL0zvclYoeyk30pcxlU26vBYLTYWw9lnqBSXNwMftt6eNUlohl6y7SdRuDdk_w3G5zgDlejmNtCTV8XFRCUWjfCRMl_b6Qyq-ZHReWX8hX3fJ9nOYICaBLC4vked8lC3nY0l4lYbi-QV_kAuQcuu0HvARwNhup_QyP4K-9Byt_hP0cKJ6GjQ5WVW0N1qujPAySWBPgNAneVrFX9" },
-  { name: "Organic Banana", price: "$22.00", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDVQ463cRlsFnQF84Vid8KafP6nUm5zUOmhknQlut8b_6giNB0SUr8XQ8yOa94Cx57W9boYwgLhEHUnKN0CiNQtk6m9gqxJy3di_5jIGtFtPzRzvEPic9xNso4tKkngrC0n6G_8LvknoiBoVfsS-LcylvM1xktx-JptFnTmmrjjEHdPc8eRdzmOM0T-NMoJIU11yOf3FdXXCDEeOoexY4ZMH-TzOjVhtl98R4qbGyjVs9c21oVdsk8GiR9Mw5-97TAC7DuIA6GeNZgd" },
-  { name: "Organic Broccoli", price: "$22.00", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAE3rpi3g2G1uHA4-rP_ptkD0M1oyEcOgAI7KfWL14U_xwnSBC6uxWYNrdxlN5hR0Ef7By1MJhk5OyeBfJQdYIVNFMeWByBL_enkrsRw1LTTjEWpIQYNdcxxfr2RulCRV18k0CxoaM_pLCwZW-f7M3v7_33mff7Y99Ac6Y9yL6KhU1oC4CCK_SGMFjkZapLIrubOOi1F3W1f4wb7kxEn20HB76BCFJZ1RewYKypsb6AYf00J6OXQMzfI1LGHpJvarVqN8nQ9zR9SxVP" },
-  { name: "Organic Lettuce", price: "$20.00", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA5dettObX418i4DOPQu3bhDfsEDkl287y62AEQ-VvV-Cuh7OYsyA0wQhoNbTUHDtpr7Cc62O-19ZO95omiR15yjImPAMxBt9VBElZLZtBRGXEH1cLG8TVmo_eEp3v_E5mnNiLfSWePvzcY8MAmMB-VfzLI9QO337SYYvRbgf9oR-xi8kG1qKL5aktgXM4icu0dvMgPXuP4DQI0FFrvV8S0DyHXZyrdGYiqpofAb25oqZHSqfgvsKdcUlTSvQeGmVpG5x392vT-YpPE" },
-  { name: "Organic Corn", price: "$15.00", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDVinRTWkjCjXeSpGNBEkMNWc0kMgKAoenQJnCjefUwhyRV_4VJ8NRPKJbMSAxvKPlToecrMyAOj6SGgWVU8nual6VQCtrx3xIRUgeQgx_3c13Xpdbt2CjmcuQJuVZsZspeYY0ki9UAZaPmITmGtfD8445Fitwx4ETTqCWdPsxpEObZnsDSWAfvaiJTglJsLOQ0zsUE6ZsA1dQLAhojwoZteOQdbnGlHS4so_SN3ikCOMn8CncU0KTxO3Wi8JNyBUfxEnlIjZNOyB46" },
-];
-
-const collections = [
-  {
-    title: "Artisanal Sauces",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA-NiH9eoD9U2ceeH8JBJ9A7ctoVmJFQ2LJAmgN7Ek-KG_4wz3PsCmYdMT16PwjNclSl-ywQoC8D4abQDDkoP0Bdwnd7-SXOiOe-Uw1OoTn8kSVl_rb-1QhFPJsFO_nRHvMBI7ExWyXIVOHYfHzUyhj1IPAYWHq5QWyu8rsGu9rOTD3PvuhW87G-UqxzvkM_jxx1kdgB4LOh0PDceKQ2hGNUEWphTLVTga2AX3AzLwP_tXo_8od4svFIlJSza31qNh9cJ75Zmh-5OWC",
-  },
-  {
-    title: "The Freshness",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCkamhTltGTMMFHxDY9mW6nAKiYE0AXzvNhmSmepISnQ_e87rtr8YgHTmejzxjSCvbsWuRtnpk2yaNWr0BIH2mAuecMBMu5JKVqEIEubgy61iojBkMqRs-Rq_q5oZkTvjBH6UvjZaimj2pBj983iQt7XhFNbFvwx1Q1o5Zjvby6mzlVp56LhuRd69qEgWgOwJZIVIvtLgVNezAAkDotwmS17PEeu9n80RiDmMeqbNCFCYZlzqkcoJxETlH282jLr0a0BQubA2jsK6Ss",
-  },
-  {
-    title: "Home Bake",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCTQd32-LWO00bS_Bi1kGrjbBuWqRTB4AG-7L6SPriHRueh8k_VFzlTYKX535jqJpezqJnvIbqn-UfrC5XapF7VGgkhweaxGxNXZZGMosAXciZiVtkserrsWmVF80UgjO-vg3s9igISDWDUfoi8nm2YSfFX94Io4GzfU5ctOEZ6Pcr7Vuvvo1VZTJvFy8-fhe3jz59LAD1Pu89kFT0kh5WarsNflYbbmglMuDY89P20-_cyk4EZzaKTeYzpvzBGZM8ttf_9TJDwIqft",
-  },
-  {
-    title: "Marvel Baby",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBPLZbCgEyf_wK7rdYgoFFTaet0XZXwmwJoAGs_sUiwhtRls4_5ym4sfb2-9vj8hH6Ab7Phjf73tcXwOPR5K3gZSSwOpRxYyiUKyrpRzMxJYrATKanuKO4SH-QGblo7EqLrgG7OOdE3v-sCgC_QLuc8DwpQ8BnHOI4dnETUvmwzJkv_97szSupuom19Kwb5bw1Jn7Qtv9QBQhh5NFuOM1a9C-Z9vpFUI794k8e38QM3MFFyztLAw62DDF7ZQGbwuGw1jVfRfcFRB-_l",
-  },
-];
-
 const partners = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuA-NiH9eoD9U2ceeH8JBJ9A7ctoVmJFQ2LJAmgN7Ek-KG_4wz3PsCmYdMT16PwjNclSl-ywQoC8D4abQDDkoP0Bdwnd7-SXOiOe-Uw1OoTn8kSVl_rb-1QhFPJsFO_nRHvMBI7ExWyXIVOHYfHzUyhj1IPAYWHq5QWyu8rsGu9rOTD3PvuhW87G-UqxzvkM_jxx1kdgB4LOh0PDceKQ2hGNUEWphTLVTga2AX3AzLwP_tXo_8od4svFIlJSza31qNh9cJ75Zmh-5OWC",
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCTQd32-LWO00bS_Bi1kGrjbBuWqRTB4AG-7L6SPriHRueh8k_VFzlTYKX535jqJpezqJnvIbqn-UfrC5XapF7VGgkhweaxGxNXZZGMosAXciZiVtkserrsWmVF80UgjO-vg3s9igISDWDUfoi8nm2YSfFX94Io4GzfU5ctOEZ6Pcr7Vuvvo1VZTJvFy8-fhe3jz59LAD1Pu89kFT0kh5WarsNflYbbmglMuDY89P20-_cyk4EZzaKTeYzpvzBGZM8ttf_9TJDwIqft",
@@ -136,13 +11,38 @@ const partners = [
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDVQ463cRlsFnQF84Vid8KafP6nUm5zUOmhknQlut8b_6giNB0SUr8XQ8yOa94Cx57W9boYwgLhEHUnKN0CiNQtk6m9gqxJy3di_5jIGtFtPzRzvEPic9xNso4tKkngrC0n6G_8LvknoiBoVfsS-LcylvM1xktx-JptFnTmmrjjEHdPc8eRdzmOM0T-NMoJIU11yOf3FdXXCDEeOoexY4ZMH-TzOjVhtl98R4qbGyjVs9c21oVdsk8GiR9Mw5-97TAC7DuIA6GeNZgd",
 ];
 
+const fallbackHeroImages = [
+  "/upload/heroslider/1772036040887-e56db2c3-7fb8-4a63-bdcf-3494a0cc227b.jpg",
+  "/upload/heroslider/1772036217503-f301371d-3a14-4586-9a26-df8f8572612b.jpg",
+  "/upload/heroslider/1772036244009-9daa82f6-db21-4747-8077-12a0ad9e8b1d.jpg",
+];
+
+const fallbackSiteAssets: Record<string, string> = {
+  freeDeliveryImage: "/upload/free-delivery/1772036910558-5d1952aa-dbf6-4e01-bed9-b2f7967e2670.jpg",
+  seedToPlateVideo: "/upload/seedtoplate/1772036488663-a96955e7-e45d-446b-8b61-0c58e44ccb3e.mp4",
+  handmadeProductsImage: "/upload/handmade-products/1772036929563-36fcf39b-cd3d-4a63-817b-af26dcf244fd.jpg",
+  dailyGrocerImage: "/upload/daily-grocer/1772036919955-b00e3cd6-ef83-417e-aab5-f3ebee32926d.jpg",
+};
+
+
 export default function Home() {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [heroImages, setHeroImages] = useState<string[]>(defaultHeroImages);
+  const [heroImages, setHeroImages] = useState<string[]>(fallbackHeroImages);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sessionRole, setSessionRole] = useState<string | null>(null);
-  const [siteAssets, setSiteAssets] = useState<Record<string, string>>({});
+  const [siteAssets, setSiteAssets] = useState<Record<string, string>>(fallbackSiteAssets);
+  const [flashSale, setFlashSale] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
+
+  const [categories, setCategories] = useState<any[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [weeklyProducts, setWeeklyProducts] = useState<any[]>([]);
+  const [collections, setCollections] = useState<any[]>([]);
+
+  const [activeCollection, setActiveCollection] = useState<any>(null);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -153,51 +53,51 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const loadHeroSliderImages = async () => {
+    const loadHomeContent = async () => {
       try {
-        const response = await fetch("/api/hero-slider", { cache: "no-store" });
-        const data = (await response.json()) as { images?: string[] };
-
+        const response = await fetch("/api/home-content", { cache: "no-store" });
         if (!response.ok) {
           return;
         }
 
-        if (data.images && data.images.length > 0) {
-          setHeroImages(data.images);
-        }
-      } catch {
-        return;
+        const data = await response.json();
+
+        if (data.flashSale) setFlashSale(data.flashSale);
+        if (Array.isArray(data.categories) && data.categories.length > 0) setCategories(data.categories);
+        if (Array.isArray(data.featuredProducts) && data.featuredProducts.length > 0) setFeaturedProducts(data.featuredProducts);
+        if (Array.isArray(data.weeklyProducts) && data.weeklyProducts.length > 0) setWeeklyProducts(data.weeklyProducts);
+        if (Array.isArray(data.collections) && data.collections.length > 0) setCollections(data.collections);
+        if (Array.isArray(data.heroImages) && data.heroImages.length > 0) setHeroImages(data.heroImages);
+        if (data.siteAssets && Object.keys(data.siteAssets).length > 0) setSiteAssets(data.siteAssets);
+      } catch (err) {
+        console.error("Failed to load home content", err);
       }
     };
 
-    void loadHeroSliderImages();
+    loadHomeContent();
   }, []);
 
   useEffect(() => {
-    const loadSiteAssets = async () => {
-      try {
-        const response = await fetch("/api/site-assets", { cache: "no-store" });
-        const data = (await response.json()) as {
-          assets?: Record<string, { url: string; type: string }>;
-        };
+    if (!flashSale?.expiresAt) return;
 
-        if (!response.ok || !data.assets) {
-          return;
-        }
-
-        const mapped = Object.entries(data.assets).reduce<Record<string, string>>((acc, [key, value]) => {
-          acc[key] = value.url;
-          return acc;
-        }, {});
-
-        setSiteAssets(mapped);
-      } catch {
+    const timer = setInterval(() => {
+      const total = Date.parse(flashSale.expiresAt) - Date.now();
+      if (total <= 0) {
+        setFlashSale(null);
+        clearInterval(timer);
         return;
       }
-    };
 
-    void loadSiteAssets();
-  }, []);
+      setTimeLeft({
+        d: Math.floor(total / (1000 * 60 * 60 * 24)),
+        h: Math.floor((total / (1000 * 60 * 60)) % 24),
+        m: Math.floor((total / 1000 / 60) % 60),
+        s: Math.floor((total / 1000) % 60),
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [flashSale]);
 
   useEffect(() => {
     if (heroImages.length === 0) {
@@ -212,16 +112,10 @@ export default function Home() {
   }, [heroImages.length]);
 
   const activeSlideIndex = heroImages.length === 0 ? 0 : currentSlide % heroImages.length;
-  const freeDeliveryImageSrc =
-    siteAssets.freeDeliveryImage ??
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuBPLZbCgEyf_wK7rdYgoFFTaet0XZXwmwJoAGs_sUiwhtRls4_5ym4sfb2-9vj8hH6Ab7Phjf73tcXwOPR5K3gZSSwOpRxYyiUKyrpRzMxJYrATKanuKO4SH-QGblo7EqLrgG7OOdE3v-sCgC_QLuc8DwpQ8BnHOI4dnETUvmwzJkv_97szSupuom19Kwb5bw1Jn7Qtv9QBQhh5NFuOM1a9C-Z9vpFUI794k8e38QM3MFFyztLAw62DDF7ZQGbwuGw1jVfRfcFRB-_l";
-  const seedToPlateVideoSrc = siteAssets.seedToPlateVideo ?? "/veg.mp4";
-  const handmadeProductsImageSrc =
-    siteAssets.handmadeProductsImage ??
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw";
-  const dailyGrocerImageSrc =
-    siteAssets.dailyGrocerImage ??
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDC7hjJ81FJnujXzosLBwnZL4nAxoY0lc-NmPKY_DafjyUWuoPRQFc4YFwx--1-uo-irrvvjeCZZk7-GSZ9TTakl9Qi_4Zzg2G7i56o0b41-JUx_MmUuT7uPV4JAiHlOL6rWoUtLJv1f0sOBcLiDCy5AZL01z9wO0cLM0-MEkB9a1w23jF-JHX6mhEqDuI_u8agAm25ESXq5WZDW_mZT9F9vi-QIjNg9Kg2THCri90nWgEMv6maKsqGAHSPOvtCJQSh6SfPoNj-ICvw";
+  const freeDeliveryImageSrc = siteAssets.freeDeliveryImage || "/placeholder.jpg";
+  const seedToPlateVideoSrc = siteAssets.seedToPlateVideo || "";
+  const handmadeProductsImageSrc = siteAssets.handmadeProductsImage || "/placeholder.jpg";
+  const dailyGrocerImageSrc = siteAssets.dailyGrocerImage || "/placeholder.jpg";
 
   useEffect(() => {
     const checkSession = async () => {
@@ -260,6 +154,9 @@ export default function Home() {
 
   const handleProtectedListAction = async (product: {
     name: string;
+    isFeatured: boolean;
+    isWeeklySpecial: boolean;
+    status: string;
     price?: string;
     image?: string;
     category?: string;
@@ -298,7 +195,7 @@ export default function Home() {
               ORGANIC<span className="font-light italic">ROOTS</span>
             </span>
           </div>
-          
+
           <div className="hidden md:flex flex-1 max-w-lg relative">
             <input
               className={`w-full border-none rounded-none py-3 px-6 pl-12 focus:ring-1 focus:ring-primary/20 text-xs tracking-wider transition-all placeholder:opacity-70 ${isScrolled ? "bg-slate-100 text-primary placeholder:text-primary/70" : "bg-white/10 text-white placeholder:text-white/70"}`}
@@ -427,67 +324,89 @@ export default function Home() {
       </section>
 
       {/* Flash Collection */}
-      <section className="py-32 bg-frosted-blue/10">
-        <div className="content-container">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-            <div className="max-w-xl">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary/60 mb-4 block">
-                Limited Opportunity
-              </span>
-              <h2 className="text-4xl md:text-5xl font-serif italic text-primary">
-                The Flash Collection
-              </h2>
-            </div>
-            <div className="flex items-center gap-12">
-              <div className="flex gap-8 text-primary">
-                <div className="text-center">
-                  <span className="block text-2xl font-serif">04</span>
-                  <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Days</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-serif">12</span>
-                  <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Hours</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-2xl font-serif">45</span>
-                  <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Mins</span>
-                </div>
+      {flashSale && (
+        <section className="py-32 bg-frosted-blue/10">
+          <div className="content-container">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+              <div className="max-w-xl">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary/60 mb-4 block">
+                  {flashSale.subtitle || "Limited Opportunity"}
+                </span>
+                <h2 className="text-4xl md:text-5xl font-serif italic text-primary">
+                  {flashSale.title}
+                </h2>
               </div>
-              <button className="btn-elegant text-primary">View All Offerings</button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-            {flashProducts.map((product, idx) => (
-              <div key={idx} className="product-card group p-8">
-                <div className="aspect-square mb-8 overflow-hidden bg-slate-50 flex items-center justify-center">
-                  <img
-                    alt={product.name}
-                    className="w-3/4 object-contain group-hover:scale-105 transition-transform duration-1000"
-                    src={product.image}
-                  />
-                </div>
-                <div className="space-y-4">
-                  <p className="text-[9px] tracking-widest uppercase text-slate-400 font-semibold">
-                    {product.category}
-                  </p>
-                  <h3 className="text-xl font-serif italic text-primary">{product.name}</h3>
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <span className="text-lg font-light text-primary">{product.price}</span>
-                    <button
-                      className="btn-elegant text-primary"
-                      onClick={() => {
-                        void handleProtectedListAction(product);
-                      }}
-                    >
-                      Add to List
-                    </button>
+              <div className="flex items-center gap-12">
+                <div className="flex gap-8 text-primary">
+                  <div className="text-center">
+                    <span className="block text-2xl font-serif">{String(timeLeft.d).padStart(2, '0')}</span>
+                    <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Days</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-2xl font-serif">{String(timeLeft.h).padStart(2, '0')}</span>
+                    <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Hours</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-2xl font-serif">{String(timeLeft.m).padStart(2, '0')}</span>
+                    <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Mins</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-2xl font-serif">{String(timeLeft.s).padStart(2, '0')}</span>
+                    <span className="text-[8px] uppercase tracking-widest opacity-60 font-semibold">Secs</span>
                   </div>
                 </div>
+                <button className="btn-elegant text-primary">View All Offerings</button>
               </div>
-            ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+              {flashSale.products.map((item: any, idx: number) => (
+                <div key={idx} className="product-card group p-8">
+                  <div className="aspect-square mb-8 overflow-hidden bg-slate-50 flex items-center justify-center relative">
+                    <img
+                      alt={item.product.name}
+                      className="w-3/4 object-contain group-hover:scale-105 transition-transform duration-1000"
+                      src={item.product.imageUrl}
+                    />
+                    {item.discount > 0 && (
+                      <span className="absolute top-4 left-4 bg-amber-500 text-white text-[9px] font-bold px-2 py-1 rounded-sm uppercase tracking-tighter">
+                        -{Math.round(item.discount)}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-[9px] tracking-widest uppercase text-slate-400 font-semibold">
+                      {item.product.category?.name}
+                    </p>
+                    <h3 className="text-xl font-serif italic text-primary">{item.product.name}</h3>
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-slate-400 line-through">${item.product.price.toFixed(2)}</span>
+                        <span className="text-lg font-light text-primary">${item.price.toFixed(2)}</span>
+                      </div>
+                      <button
+                        className="btn-elegant text-primary"
+                        onClick={() => {
+                          void handleProtectedListAction({
+                            name: item.product.name,
+                            price: `$${item.price.toFixed(2)}`,
+                            image: item.product.imageUrl,
+                            category: item.product.category?.name,
+                            isFeatured: false,
+                            isWeeklySpecial: false,
+                            status: "active"
+                          });
+                        }}
+                      >
+                        Add to List
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Promo Banner */}
       <section className="relative h-[400px] overflow-hidden bg-primary w-full">
@@ -526,11 +445,25 @@ export default function Home() {
         <div className="content-container">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {collections.map((col, idx) => (
-              <div key={idx} className="relative h-72 group cursor-pointer overflow-hidden shadow-sm">
+              <div
+                key={idx}
+                className="relative h-72 group cursor-pointer overflow-hidden shadow-sm"
+                onClick={async () => {
+                  // Fetch full collection with products
+                  try {
+                    const res = await fetch(`/api/collections?slug=${col.slug}`);
+                    const data = await res.json();
+                    if (data.collection) {
+                      setActiveCollection(data.collection);
+                      setIsCollectionModalOpen(true);
+                    }
+                  } catch (err) { console.error(err); }
+                }}
+              >
                 <img
                   alt={col.title}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]"
-                  src={col.image}
+                  src={col.imageUrl}
                 />
                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
                 <div className="absolute bottom-10 left-10 text-white">
@@ -585,7 +518,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="relative rounded-none overflow-hidden h-80 group shadow-lg">
               <img
@@ -629,9 +562,11 @@ export default function Home() {
 
       {/* Video Section */}
       <section className="relative h-[600px] overflow-hidden">
-        <video autoPlay className="absolute inset-0 w-full h-full object-cover" loop muted playsInline>
-          <source src={seedToPlateVideoSrc} type="video/mp4" />
-        </video>
+        {seedToPlateVideoSrc && (
+          <video autoPlay className="absolute inset-0 w-full h-full object-cover" loop muted playsInline>
+            <source src={seedToPlateVideoSrc} type="video/mp4" />
+          </video>
+        )}
         <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
           <div className="content-container text-center text-white">
             <h2 className="text-5xl font-serif italic mb-6">From Seed to Plate</h2>
@@ -698,7 +633,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            
+
             <div className="flex justify-center">
               <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] rounded-full overflow-hidden shadow-2xl border-8 border-white">
                 <img
@@ -763,6 +698,97 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Collection Modal */}
+      {isCollectionModalOpen && activeCollection && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-primary/40 backdrop-blur-md" onClick={() => setIsCollectionModalOpen(false)}></div>
+          <div className="relative w-full max-w-7xl bg-white h-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95 duration-500">
+            <div className="flex justify-between items-center p-8 border-b border-slate-100 bg-slate-50/30">
+              <div>
+                <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-primary/40 block mb-2 underline decoration-amber-500/30 underline-offset-4">Curated Collection</span>
+                <h2 className="text-3xl md:text-4xl font-serif italic text-primary">{activeCollection.title}</h2>
+              </div>
+              <button
+                onClick={() => setIsCollectionModalOpen(false)}
+                className="w-12 h-12 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors group"
+              >
+                <span className="material-symbols-outlined font-light text-slate-400 group-hover:text-primary transition-colors">close</span>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar">
+              {activeCollection.description && (
+                <p className="text-lg font-light text-slate-500 max-w-3xl mb-16 leading-relaxed italic border-l-2 border-slate-100 pl-8">
+                  {activeCollection.description}
+                </p>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-20">
+                {activeCollection.products?.map((item: any, idx: number) => (
+                  <div key={idx} className="group flex flex-col h-full">
+                    <div className="aspect-square bg-slate-50/50 mb-6 flex items-center justify-center p-10 transition-all group-hover:bg-frosted-blue/10 relative overflow-hidden">
+                      {item.product.imageUrl ? (
+                        <img
+                          alt={item.product.name}
+                          className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110"
+                          src={item.product.imageUrl}
+                        />
+                      ) : (
+                        <span className="material-symbols-outlined text-slate-200 text-4xl">inventory_2</span>
+                      )}
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="w-8 h-8 bg-white shadow-sm rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+                          <span className="material-symbols-outlined text-sm font-light">favorite</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-auto">
+                      <p className="text-[9px] tracking-widest uppercase text-slate-400 mb-2 font-semibold">
+                        {item.product.category?.name || "Selection"}
+                      </p>
+                      <h4 className="text-xl font-serif mb-1 text-primary group-hover:text-amber-600 transition-colors uppercase tracking-tight">{item.product.name}</h4>
+                      <p className="text-[11px] text-slate-400 font-light mb-6 border-b border-slate-50 pb-4">
+                        {item.product.weight || "Heritage Grade"}
+                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xl font-light text-primary">${item.product.price.toFixed(2)}</span>
+                        <button
+                          className="btn-elegant !py-2 !px-4 text-[10px] font-bold"
+                          onClick={() => {
+                            void handleProtectedListAction({
+                              name: item.product.name,
+                              price: `$${item.product.price.toFixed(2)}`,
+                              image: item.product.imageUrl,
+                              category: item.product.category?.name,
+                              isFeatured: false,
+                              isWeeklySpecial: false,
+                              status: "active"
+                            });
+                          }}
+                        >
+                          Add to List
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {(!activeCollection.products || activeCollection.products.length === 0) && (
+                <div className="py-40 text-center">
+                  <span className="material-symbols-outlined text-slate-100 text-6xl mb-4">inventory</span>
+                  <p className="text-slate-300 uppercase tracking-[0.3em] font-bold text-xs">Awaiting fresh arrivals for this collection.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-8 bg-slate-50 border-t border-slate-100 text-center">
+              <p className="text-[9px] uppercase tracking-[0.5em] text-slate-400">ORGANICROOTS PRIVATE LABEL CURATION</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-primary text-white pt-32 pb-12">

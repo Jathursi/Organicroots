@@ -4,13 +4,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import CategoryManagement from "@/components/admin/CategoryManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
+import TeamManagement from "@/components/admin/TeamManagement";
+import FlashSaleManagement from "@/components/admin/FlashSaleManagement";
+import OfferManagement from "@/components/admin/OfferManagement";
+import CollectionManagement from "@/components/admin/CollectionManagement";
 
 const menuItems = [
   "dashboard",
   "user contents",
   "category",
   "products",
+  "collections", // Added collections
   "flash sales",
+  "offers",
   "user role",
   "account",
   "logout",
@@ -121,8 +127,8 @@ export default function AdminPage() {
   const [uploadMessage, setUploadMessage] = useState<string>("");
 
   const pageTitle = useMemo(() => {
-    if (activeMenu === "user contents") {
-      return "User Contents";
+    if (activeMenu === "user role") {
+      return "Team & Role Management";
     }
 
     return activeMenu
@@ -136,8 +142,10 @@ export default function AdminPage() {
     "user contents": "collections",
     category: "category",
     products: "inventory_2",
+    collections: "grid_view", // Added collections icon
     "flash sales": "bolt",
-    "user role": "manage_accounts",
+    offers: "redeem",
+    "user role": "admin_panel_settings",
     account: "person",
     logout: "logout",
   };
@@ -153,52 +161,34 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const loadSliderImages = async () => {
+    const loadDashboardContent = async () => {
       try {
-        const response = await fetch("/api/admin/hero-slider", { cache: "no-store" });
-        const data = (await response.json()) as { images?: string[] };
+        const response = await fetch("/api/admin/all-site-content", { cache: "no-store" });
+        const data = (await response.json()) as {
+          heroImages?: string[];
+          siteAssets?: Record<string, string>
+        };
 
         if (response.status === 401 || response.status === 403) {
           router.push("/");
           return;
         }
 
-        if (!response.ok) {
-          return;
-        }
+        if (!response.ok || !data) return;
 
-        setSliderImages(data.images ?? []);
-      } catch {
-        return;
+        if (data.heroImages) setSliderImages(data.heroImages);
+        if (data.siteAssets) {
+          if (data.siteAssets.seedToPlateVideo) setSeedVideo([data.siteAssets.seedToPlateVideo]);
+          if (data.siteAssets.freeDeliveryImage) setFreeDeliveryImage([data.siteAssets.freeDeliveryImage]);
+          if (data.siteAssets.dailyGrocerImage) setDailyGrocerImage([data.siteAssets.dailyGrocerImage]);
+          if (data.siteAssets.handmadeProductsImage) setHandmadeProductsImage([data.siteAssets.handmadeProductsImage]);
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard content", err);
       }
     };
 
-    void loadSliderImages();
-
-    const loadSingleAsset = async (
-      key: "seedToPlateVideo" | "freeDeliveryImage" | "dailyGrocerImage" | "handmadeProductsImage",
-      setter: (value: string[]) => void
-    ) => {
-      try {
-        const response = await fetch(`/api/admin/user-content/${key}`, { cache: "no-store" });
-        const data = (await response.json()) as { asset?: { url: string } | null };
-
-        if (!response.ok) {
-          return;
-        }
-
-        if (data.asset?.url) {
-          setter([data.asset.url]);
-        }
-      } catch {
-        return;
-      }
-    };
-
-    void loadSingleAsset("seedToPlateVideo", setSeedVideo);
-    void loadSingleAsset("freeDeliveryImage", setFreeDeliveryImage);
-    void loadSingleAsset("dailyGrocerImage", setDailyGrocerImage);
-    void loadSingleAsset("handmadeProductsImage", setHandmadeProductsImage);
+    void loadDashboardContent();
   }, [router]);
 
   const uploadSliderImages = async (files: FileList | null) => {
@@ -273,61 +263,81 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="bg-background-light text-slate-800 min-h-screen flex">
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col fixed h-full z-20">
-        <div className="p-8">
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-primary uppercase">ORGANIC<span className="font-light italic">ROOTS</span></h1>
-          <span className="text-[9px] tracking-[0.3em] uppercase text-primary/40 font-bold block mt-1">Admin Console</span>
+    <main className="bg-[#f0f7ff]/40 text-slate-800 min-h-screen flex">
+      <aside className="w-72 bg-white border-r border-slate-100 flex flex-col fixed h-full z-50">
+        <div className="p-10 mb-2">
+          <h1 className="font-serif text-2xl font-bold tracking-tight text-[#03045e] uppercase leading-none">
+            ORGANIC<span className="font-light italic">ROOTS</span>
+          </h1>
+          <span className="text-[9px] tracking-[0.2em] uppercase text-slate-400 font-bold block mt-2">
+            Admin Console
+          </span>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1">
-          {menuItems.map((item) => (
-            <button
-              className={`w-full flex items-center px-4 py-3 text-sm rounded-lg transition-colors ${activeMenu === item
-                ? "bg-primary text-white font-semibold shadow-lg shadow-primary/20"
-                : item === "logout"
-                  ? "text-red-500 hover:bg-red-50"
-                  : "text-slate-600 hover:bg-light-cyan/50"
-                }`}
-              key={item}
-              onClick={() => {
-                void handleMenuClick(item);
-              }}
-              type="button"
-            >
-              <span className="material-symbols-outlined mr-3">{menuIconMap[item]}</span>
-              {item
-                .split(" ")
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join(" ")}
-            </button>
-          ))}
+        <nav className="flex-1 px-4 space-y-1 mt-6">
+          {menuItems.map((item) => {
+            const isActive = activeMenu === item;
+            return (
+              <button
+                className={`w-full flex items-center px-6 py-3.5 text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all duration-300 ${isActive
+                  ? "bg-[#03045e] text-white shadow-xl shadow-[#03045e]/20 translate-x-1"
+                  : item === "logout"
+                    ? "text-red-500 hover:bg-red-50"
+                    : "text-slate-400 hover:text-[#03045e] hover:bg-slate-50"
+                  }`}
+                key={item}
+                onClick={() => {
+                  void handleMenuClick(item);
+                }}
+                type="button"
+              >
+                <span className={`material-symbols-outlined mr-4 text-xl ${isActive ? "text-white" : "text-slate-400"}`}>
+                  {menuIconMap[item]}
+                </span>
+                <span className="truncate">
+                  {item === "user contents" ? "User Contents" :
+                    item === "user role" ? "User Role" :
+                      item === "flash sales" ? "Flash Sales" :
+                        item === "offers" ? "Special Offers" :
+                          item.charAt(0).toUpperCase() + item.slice(1)}
+                </span>
+              </button>
+            );
+          })}
         </nav>
+
+        <div className="p-8 border-t border-slate-50 flex items-center gap-4">
+          <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-[#03045e] font-bold text-xs ring-4 ring-slate-50/50">A</div>
+          <div>
+            <p className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">Julian de'Rossi</p>
+            <p className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold">Master Admin</p>
+          </div>
+        </div>
       </aside>
 
       <section className="flex-1 ml-72">
-        <header className="h-16 flex items-center justify-between px-10 bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200">
+        <header className="h-20 flex items-center justify-between px-10 bg-white sticky top-0 z-40 border-b border-slate-100 shadow-sm/50">
           <div className="flex items-center gap-6 flex-1">
-            <div className="relative max-w-md w-full">
+            <div className="relative max-w-xl w-full">
               <input
-                className="w-full bg-slate-50 border-none rounded-none py-2 px-10 text-xs tracking-wider placeholder:text-slate-400 focus:ring-1 focus:ring-primary/10"
-                placeholder={activeMenu === "products" ? "SEARCH PRODUCTS..." : activeMenu === "category" ? "SEARCH CATEGORIES..." : "SEARCH..."}
+                className="w-full bg-slate-50 border-none rounded-none py-2.5 px-10 text-[10px] tracking-[0.15em] font-medium placeholder:text-slate-400 focus:ring-1 focus:ring-primary/10 uppercase"
+                placeholder="SEARCH..."
                 type="text"
               />
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-6">
-            <button className="text-slate-500 hover:text-primary transition-colors" type="button">
-              <span className="material-symbols-outlined">notifications</span>
+          <div className="flex items-center gap-8 border-l border-slate-100 pl-8 ml-8">
+            <button className="relative p-2 text-slate-400 hover:text-primary transition-colors" type="button">
+              <span className="material-symbols-outlined text-2xl">notifications</span>
             </button>
-            <div className="flex items-center space-x-3 border-l pl-6 border-slate-200">
+            <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-semibold text-slate-800 leading-none">Admin User</p>
-                <p className="text-[10px] text-slate-500 uppercase mt-1">Super Admin</p>
+                <p className="text-[11px] font-bold text-slate-800 uppercase leading-none">Admin User</p>
+                <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">SUPER ADMIN</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 rounded-full bg-[#03045e] flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-[#03045e]/20">
                 A
               </div>
             </div>
@@ -335,9 +345,13 @@ export default function AdminPage() {
         </header>
 
         <div className="p-10 max-w-6xl mx-auto">
-          <div className="mb-10">
-            <h2 className="font-serif text-5xl font-bold text-primary">{pageTitle}</h2>
-            <p className="text-slate-500 mt-2">Manage the visual elements of your storefront.</p>
+          <div className="mb-12">
+            <h2 className="font-serif text-5xl font-bold text-primary tracking-tight">{pageTitle}</h2>
+            <p className="text-slate-400 mt-3 text-xs uppercase tracking-[0.2em] font-medium">
+              {activeMenu === "user role" ? "Manage administrative access and assign roles to team members" :
+                activeMenu === "products" ? "Manage inventories, pricing, and display status" :
+                  "Manage the visual elements of your storefront."}
+            </p>
           </div>
 
           {activeMenu === "user contents" ? (
@@ -422,19 +436,28 @@ export default function AdminPage() {
             <CategoryManagement />
           ) : activeMenu === "products" ? (
             <ProductManagement />
+          ) : activeMenu === "collections" ? ( // Added collections management
+            <CollectionManagement />
+          ) : activeMenu === "flash sales" ? (
+            <FlashSaleManagement />
+          ) : activeMenu === "offers" ? (
+            <OfferManagement />
+          ) : activeMenu === "user role" ? (
+            <TeamManagement />
           ) : (
-            <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-              <p className="text-slate-500">This section is ready for next setup.</p>
+            <div className="bg-white rounded-none p-12 border border-slate-100 shadow-sm text-center">
+              <span className="material-symbols-outlined text-4xl text-slate-100 mb-4 block">construction</span>
+              <p className="text-slate-400 uppercase tracking-widest text-[10px] font-bold">This section is being drafted.</p>
             </div>
           )}
         </div>
 
-        <div className="fixed bottom-8 right-8 flex flex-col space-y-4">
-          <button className="w-12 h-12 bg-white border border-slate-200 rounded-full shadow-xl flex items-center justify-center text-primary hover:scale-110 transition-transform" type="button">
-            <span className="material-symbols-outlined">help</span>
+        <div className="fixed bottom-8 right-8 flex flex-col space-y-4 z-50">
+          <button className="w-12 h-12 bg-white border border-slate-100 rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-primary hover:scale-110 transition-all duration-300" type="button">
+            <span className="material-symbols-outlined text-2xl">help</span>
           </button>
-          <div className="w-12 h-12 bg-primary rounded-full shadow-xl flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-[22px]">smart_toy</span>
+          <div className="w-12 h-12 bg-[#03045e] rounded-full shadow-xl flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-all duration-300 border-4 border-white">
+            <span className="material-symbols-outlined text-[24px]">smart_toy</span>
           </div>
         </div>
       </section>

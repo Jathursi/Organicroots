@@ -109,6 +109,8 @@ export async function POST(request: Request) {
                 weight: weight || null,
                 imageUrl,
                 status,
+                isFeatured: formData.get("isFeatured") === "true",
+                isWeeklySpecial: formData.get("isWeeklySpecial") === "true",
             },
         });
 

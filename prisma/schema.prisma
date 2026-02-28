@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  engineType = "library"
+  engineType = "binary"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -22,8 +22,9 @@ model User {
   password  String
   role      String   @default("user")
   fullName  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  lastActive DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   profile   Profile?
   listItems UserListItem[]
@@ -102,11 +103,92 @@ model Product {
   price       Float
   weight      String?
   imageUrl    String?
-  status      String   @default("active") // active, draft
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status          String   @default("active") // active, draft
+  isFeatured      Boolean  @default(false)
+  isWeeklySpecial Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   category    Category @relation(fields: [categoryId], references: [id])
+  flashSales  FlashSaleProduct[]
+  collections CollectionProduct[]
 
   @@map("products")
+}
+
+model FlashSale {
+  id          String   @id @default(uuid())
+  title       String   @default("The Flash Collection")
+  subtitle    String?  @default("Limited Opportunity")
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  products    FlashSaleProduct[]
+
+  @@map("flash_sales")
+}
+
+model FlashSaleProduct {
+  id          String   @id @default(uuid())
+  flashSaleId String
+  productId   String
+  price       Float
+  discount    Float?   @default(0) // percentage discount
+  flashSale   FlashSale @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("flash_sale_products")
+}
+
+model Offer {
+  id                String   @id @default(uuid())
+  title             String
+  type              String   // BOGO, BXGY, DISCOUNT, THRESHOLD
+  isActive          Boolean  @default(true)
+  
+  // Buy X Get Y (can be same or different product)
+  triggerProductId  String?
+  triggerQuantity   Float?   @default(1)
+  rewardProductId   String?
+  rewardQuantity    Float?   @default(1)
+  
+  // Off % or Flat Save
+  discountValue     Float?   
+  discountType      String?  // PERCENTAGE, FIXED
+
+  // Threshold (e.g., above 1kg save $5)
+  thresholdWeight   Float?   // grams
+  thresholdValue    Float?   // $ amount
+  savingsAmount     Float?   
+  
+  expiresAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("offers")
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  products    CollectionProduct[]
+
+  @@map("collections")
+}
+
+model CollectionProduct {
+  id           String     @id @default(uuid())
+  collectionId String
+  productId    String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("collection_products")
 }

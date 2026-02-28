@@ -18,6 +18,8 @@ type Product = {
     price: number;
     weight: string | null;
     imageUrl: string | null;
+    isFeatured: boolean;
+    isWeeklySpecial: boolean;
     status: string;
 };
 
@@ -122,7 +124,13 @@ export default function ProductManagement() {
     };
 
     const handleOpenPanel = (product: Partial<Product> | null = null) => {
-        setEditingProduct(product || { name: "", sku: "", categoryId: categories[0]?.id || "", price: 0, stock: 0, status: "active" });
+        setEditingProduct(product || {
+            name: "", sku: "", categoryId: categories[0]?.id || "",
+            price: 0, stock: 0,
+            isFeatured: false,
+            isWeeklySpecial: false,
+            status: "active"
+        });
         setPreviewImage(product?.imageUrl || null);
         setSelectedFile(null);
         setIsPanelOpen(true);
@@ -160,6 +168,8 @@ export default function ProductManagement() {
         formData.append("price", String(editingProduct.price || 0));
         formData.append("stock", String(editingProduct.stock || 0));
         formData.append("weight", editingProduct.weight || "");
+        formData.append("isFeatured", String(editingProduct.isFeatured || false));
+        formData.append("isWeeklySpecial", String(editingProduct.isWeeklySpecial || false));
         formData.append("status", editingProduct.status || "active");
         if (selectedFile) {
             formData.append("file", selectedFile);
@@ -319,8 +329,8 @@ export default function ProductManagement() {
                                         </td>
                                         <td className="py-4 px-6 border-b border-slate-50">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${prod.stock === 0 ? "bg-red-100 text-red-700" :
-                                                    prod.stock <= 10 ? "bg-amber-100 text-amber-700" :
-                                                        "bg-green-100 text-green-700"
+                                                prod.stock <= 10 ? "bg-amber-100 text-amber-700" :
+                                                    "bg-green-100 text-green-700"
                                                 }`}>
                                                 {prod.stock === 0 ? "Out of Stock" : prod.stock <= 10 ? `Low Stock (${prod.stock})` : `In Stock (${prod.stock})`}
                                             </span>
@@ -447,6 +457,21 @@ export default function ProductManagement() {
                                 <option value="active">Active</option>
                                 <option value="draft">Draft</option>
                             </select>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400 block mb-3">Product Promotion</label>
+                            <div className="flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingProduct(prev => ({ ...prev!, isFeatured: !prev!.isFeatured }))}
+                                    className={`px-4 py-3 text-[9px] font-bold uppercase tracking-widest border transition-all ${editingProduct?.isFeatured ? "bg-[#03045e] text-white border-[#03045e] shadow-lg shadow-[#03045e]/20" : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"}`}
+                                >Featured Item</button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingProduct(prev => ({ ...prev!, isWeeklySpecial: !prev!.isWeeklySpecial }))}
+                                    className={`px-4 py-3 text-[9px] font-bold uppercase tracking-widest border transition-all ${editingProduct?.isWeeklySpecial ? "bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-500/20" : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"}`}
+                                >Weekly Selection</button>
+                            </div>
                         </div>
                     </div>
 
