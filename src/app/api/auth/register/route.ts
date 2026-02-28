@@ -32,53 +32,54 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    let user: {
-      id: string;
-      email: string;
-      fullName: string | null;
-      role: string;
-    };
+
+    const createdUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        fullName: fullName || null,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+      },
+    });
 
     try {
-      user = await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          fullName: fullName || null,
-          profile: {
-            create: {
-              fullName: fullName || null,
-            },
-          },
-        },
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          role: true,
-        },
-      });
-    } catch (createError) {
-      console.error("[auth/register:create_primary]", createError);
-
-      const fallbackUser = await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
+      await prisma.profile.upsert({
+        where: { userId: createdUser.id },
+        update: {
           fullName: fullName || null,
         },
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
+        create: {
+          userId: createdUser.id,
+          fullName: fullName || null,
         },
       });
-
-      user = {
-        ...fallbackUser,
-        role: "user",
-      };
+    } catch (profileError) {
+      console.error("[auth/register:profile_optional]", profileError);
     }
+
+    let role = "user";
+
+    try {
+      const roleResult = await prisma.user.findUnique({
+        where: { id: createdUser.id },
+        select: { role: true },
+      });
+
+      role = roleResult?.role ?? "user";
+    } catch (roleError) {
+      console.error("[auth/register:role_optional]", roleError);
+    }
+
+    const user = {
+      id: createdUser.id,
+      email: createdUser.email,
+      fullName: createdUser.fullName,
+      role,
+    };
 
     const token = await createAuthToken({
       sub: user.id,
