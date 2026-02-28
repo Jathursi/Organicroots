@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  engineType = "library"
+  engineType = "binary"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -79,14 +79,34 @@ model SiteAsset {
 }
 
 model Category {
-  id          String   @id @default(uuid())
-  name        String   @unique
+  id          String    @id @default(uuid())
+  name        String    @unique
   imageUrl    String?
-  accentColor String?  @default("#caf0f8")
-  priority    Int      @default(0)
-  isVisible   Boolean  @default(true)
+  accentColor String?   @default("#caf0f8")
+  priority    Int       @default(0)
+  isVisible   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  sku         String   @unique
+  categoryId  String
+  brand       String?
+  stock       Int      @default(0)
+  price       Float
+  weight      String?
+  imageUrl    String?
+  status      String   @default("active") // active, draft
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@map("categories")
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  @@map("products")
 }

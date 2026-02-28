@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import CategoryManagement from "@/components/admin/CategoryManagement";
+import ProductManagement from "@/components/admin/ProductManagement";
 
 const menuItems = [
   "dashboard",
@@ -306,10 +307,15 @@ export default function AdminPage() {
 
       <section className="flex-1 ml-72">
         <header className="h-16 flex items-center justify-between px-10 bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200">
-          <div className="flex items-center space-x-2 text-xs font-semibold tracking-widest text-slate-400 uppercase">
-            <span>Organic Roots</span>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <span className="text-primary">Admin Panel</span>
+          <div className="flex items-center gap-6 flex-1">
+            <div className="relative max-w-md w-full">
+              <input
+                className="w-full bg-slate-50 border-none rounded-none py-2 px-10 text-xs tracking-wider placeholder:text-slate-400 focus:ring-1 focus:ring-primary/10"
+                placeholder={activeMenu === "products" ? "SEARCH PRODUCTS..." : activeMenu === "category" ? "SEARCH CATEGORIES..." : "SEARCH..."}
+                type="text"
+              />
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+            </div>
           </div>
 
           <div className="flex items-center space-x-6">
@@ -414,6 +420,8 @@ export default function AdminPage() {
             </div>
           ) : activeMenu === "category" ? (
             <CategoryManagement />
+          ) : activeMenu === "products" ? (
+            <ProductManagement />
           ) : (
             <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
               <p className="text-slate-500">This section is ready for next setup.</p>
