@@ -19,16 +19,45 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-        password: true,
-      },
-    });
+    let user: {
+      id: string;
+      email: string;
+      fullName: string | null;
+      role: string;
+      password: string;
+    } | null;
+
+    try {
+      user = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          password: true,
+        },
+      });
+    } catch (findError) {
+      console.error("[auth/login:find_primary]", findError);
+
+      const fallbackUser = await prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          password: true,
+        },
+      });
+
+      user = fallbackUser
+        ? {
+            ...fallbackUser,
+            role: "user",
+          }
+        : null;
+    }
 
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });

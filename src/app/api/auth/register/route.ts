@@ -32,25 +32,53 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    let user: {
+      id: string;
+      email: string;
+      fullName: string | null;
+      role: string;
+    };
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        fullName: fullName || null,
-        profile: {
-          create: {
-            fullName: fullName || null,
+    try {
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          fullName: fullName || null,
+          profile: {
+            create: {
+              fullName: fullName || null,
+            },
           },
         },
-      },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-      },
-    });
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+        },
+      });
+    } catch (createError) {
+      console.error("[auth/register:create_primary]", createError);
+
+      const fallbackUser = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          fullName: fullName || null,
+        },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+        },
+      });
+
+      user = {
+        ...fallbackUser,
+        role: "user",
+      };
+    }
 
     const token = await createAuthToken({
       sub: user.id,
