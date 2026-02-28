@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -11,12 +11,12 @@ export const prisma =
   new PrismaClient({
     ...(runtimeDatabaseUrl
       ? {
-          datasources: {
-            db: {
-              url: runtimeDatabaseUrl,
-            },
+        datasources: {
+          db: {
+            url: runtimeDatabaseUrl,
           },
-        }
+        },
+      }
       : {}),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });

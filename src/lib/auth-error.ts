@@ -1,28 +1,34 @@
 export function mapAuthServerError(error: unknown): { status: number; message: string } {
   const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorCode = (error as any)?.code;
 
-  if (errorMessage.includes("Environment variable not found") || errorMessage.includes("DATABASE_URL")) {
-    return { status: 500, message: "Server config error: database environment variable is missing." };
+  if (errorCode === "P1001" || errorMessage.includes("Can't reach database server")) {
+    return { status: 503, message: "Database is unreachable. Check your network or Supabase status." };
   }
 
-  if (errorMessage.includes("Can't reach database server") || errorMessage.includes("P1001")) {
-    return { status: 503, message: "Database is unreachable from server environment." };
+  if (errorCode === "P1008" || errorMessage.includes("timeout")) {
+    return { status: 504, message: "Database connection timed out." };
   }
 
   if (
-    errorMessage.includes("P2021") ||
-    errorMessage.includes("P2022") ||
+    errorCode === "P2021" ||
+    errorCode === "P2022" ||
     errorMessage.includes("does not exist") ||
     errorMessage.includes("column") ||
     errorMessage.includes("relation") ||
     errorMessage.includes("table")
   ) {
-    return { status: 500, message: "Database schema is out of sync. Run prisma db push on production DB." };
+    return { status: 500, message: "Database schema mismatch. Run 'npx prisma db push' to sync your database." };
+  }
+
+  if (errorMessage.includes("Environment variable not found") || errorMessage.includes("DATABASE_URL")) {
+    return { status: 500, message: "Server config error: missing DATABASE_URL." };
   }
 
   if (errorMessage.includes("prepared statement") || errorMessage.includes("connection")) {
-    return { status: 503, message: "Database connection issue on server. Verify DIRECT_URL and DATABASE_URL in Vercel." };
+    return { status: 503, message: "Database connection failed. Verify your connection strings in Vercel settings." };
   }
 
-  return { status: 500, message: "Unexpected server error." };
+  console.error("[CRITICAL: Unmapped Error]", error);
+  return { status: 500, message: "Internal server error. Please check server logs." };
 }
