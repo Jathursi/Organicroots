@@ -41,6 +41,10 @@ export function mapAuthServerError(error: unknown): { status: number; message: s
     return { status: 500, message: "Server config error: missing DATABASE_URL." };
   }
 
+  if (errorMessage.includes("MaxClientsInSession") || errorMessage.includes("FATAL: remaining connection slots")) {
+    return { status: 503, message: "Database connection limit reached. Please use the Supabase Transaction Pooler (port 6543) in your Vercel settings." };
+  }
+
   if (errorMessage.includes("prepared statement") || errorMessage.includes("connection")) {
     return { status: 503, message: "Database connection failed. Verify your connection strings in Vercel settings." };
   }
