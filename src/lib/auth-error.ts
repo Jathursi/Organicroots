@@ -21,6 +21,10 @@ export function mapAuthServerError(error: unknown): { status: number; message: s
     return { status: 500, message: "Database schema mismatch. Run 'npx prisma db push' to sync your database." };
   }
 
+  if (errorMessage.includes("PrismaClientInitializationError") || errorMessage.includes("Invalid datasource")) {
+    return { status: 500, message: "Prisma failed to initialize. Check if DATABASE_URL is correctly set in Vercel." };
+  }
+
   if (errorMessage.includes("Environment variable not found") || errorMessage.includes("DATABASE_URL")) {
     return { status: 500, message: "Server config error: missing DATABASE_URL." };
   }
